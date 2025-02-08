@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { SCENE_KEYS } from './scene-keys';
-import { ASSET_PACK_KEYS } from '../common/assets';
+import { ASSET_KEYS, ASSET_PACK_KEYS } from '../common/assets';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -15,6 +15,12 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   public create(): void {
+    this.#createAnimations();
+
     this.scene.start(SCENE_KEYS.GAME_SCENE);
+  }
+
+  #createAnimations(): void {
+    this.anims.createFromAseprite(ASSET_KEYS.PLAYER);
   }
 }
