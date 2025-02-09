@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { Position } from '../../common/types';
 import { PLAYER_ANIMATION_KEYS } from '../../common/assets';
 import { InputComponent } from '../../components/input/input-component';
+import { ControlsComponent } from '../../components/game-object/controls-component';
 
 export type PlayerConfig = {
   scene: Phaser.Scene;
@@ -12,7 +13,7 @@ export type PlayerConfig = {
 };
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  #controls: InputComponent;
+  #controlsComponent: ControlsComponent;
 
   constructor(config: PlayerConfig) {
     const { scene, position, assetKey, frame } = config;
@@ -24,7 +25,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     // add components
-    this.#controls = config.controls;
+    this.#controlsComponent = new ControlsComponent(this, config.controls);
 
     this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_DOWN, repeat: -1 });
 
@@ -40,18 +41,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   update(): void {
+    const controls = this.#controlsComponent.controls;
     // vertical movement
-    if (this.#controls.isUpDown) {
+    if (controls.isUpDown) {
       this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_UP, repeat: -1 }, true);
-    } else if (this.#controls.isDownDown) {
+    } else if (controls.isDownDown) {
       this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_DOWN, repeat: -1 }, true);
     }
 
     // horizontal movement
-    if (this.#controls.isLeftDown) {
+    if (controls.isLeftDown) {
       this.setFlipX(true);
       this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_SIDE, repeat: -1 }, true);
-    } else if (this.#controls.isRightDown) {
+    } else if (controls.isRightDown) {
       this.setFlipX(false);
       this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_SIDE, repeat: -1 }, true);
     }
