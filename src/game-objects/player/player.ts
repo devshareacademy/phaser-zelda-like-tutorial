@@ -3,6 +3,7 @@ import { Position } from '../../common/types';
 import { PLAYER_ANIMATION_KEYS } from '../../common/assets';
 import { InputComponent } from '../../components/input/input-component';
 import { ControlsComponent } from '../../components/game-object/controls-component';
+import { isArcadePhysicsBody } from '../../common/utils';
 
 export type PlayerConfig = {
   scene: Phaser.Scene;
@@ -40,22 +41,63 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     );
   }
 
-  update(): void {
+  public update(): void {
     const controls = this.#controlsComponent.controls;
     // vertical movement
     if (controls.isUpDown) {
-      this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_UP, repeat: -1 }, true);
+      this.play({ key: PLAYER_ANIMATION_KEYS.WALK_UP, repeat: -1 }, true);
+      this.#updateVelocity(false, -1);
     } else if (controls.isDownDown) {
-      this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_DOWN, repeat: -1 }, true);
+      this.play({ key: PLAYER_ANIMATION_KEYS.WALK_DOWN, repeat: -1 }, true);
+      this.#updateVelocity(false, 1);
+    } else {
+      this.#updateVelocity(false, 0);
     }
 
     // horizontal movement
+    const isMovingVertically = controls.isDownDown || controls.isUpDown;
     if (controls.isLeftDown) {
       this.setFlipX(true);
-      this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_SIDE, repeat: -1 }, true);
+      this.#updateVelocity(true, -1);
+      if (!isMovingVertically) {
+        this.play({ key: PLAYER_ANIMATION_KEYS.WALK_SIDE, repeat: -1 }, true);
+      }
     } else if (controls.isRightDown) {
       this.setFlipX(false);
-      this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_SIDE, repeat: -1 }, true);
+      this.#updateVelocity(true, 1);
+      if (!isMovingVertically) {
+        this.play({ key: PLAYER_ANIMATION_KEYS.WALK_SIDE, repeat: -1 }, true);
+      }
+    } else {
+      this.#updateVelocity(true, 0);
     }
+
+    // if no input is provided, show idle animation
+    if (!controls.isDownDown && !controls.isUpDown && !controls.isLeftDown && !controls.isRightDown) {
+      this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_DOWN, repeat: -1 }, true);
+    }
+
+    this.#normalizeVelocity();
+  }
+
+  #updateVelocity(isX: boolean, value: number): void {
+    if (!isArcadePhysicsBody(this.body)) {
+      return;
+    }
+    if (isX) {
+      this.body.velocity.x = value;
+      return;
+    }
+    this.body.velocity.y = value;
+  }
+
+  #normalizeVelocity(): void {
+    // if the player is moving diagonally, the resultant vector will have a magnitude greater than the defined speed.
+    // if we normalize the vector, this will make sure the magnitude matches defined speed
+    if (!isArcadePhysicsBody(this.body)) {
+      return;
+    }
+    const speed = 80;
+    this.body.velocity.normalize().scale(speed);
   }
 }
