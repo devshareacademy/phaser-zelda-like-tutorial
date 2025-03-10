@@ -6,6 +6,8 @@ import { exhaustiveGuard, isArcadePhysicsBody } from '../../../../common/utils';
 import { Direction } from '../../../../common/types';
 import { HURT_PUSH_BACK_DELAY } from '../../../../common/config';
 import { CHARACTER_ANIMATIONS } from '../../../../common/assets';
+import { HeldGameObjectComponent } from '../../../game-object/held-game-object-component';
+import { ThrowableObjectComponent } from '../../../game-object/throwable-object-component';
 
 export class HurtState extends BaseCharacterState {
   #hurtPushBackSpeed: number;
@@ -27,10 +29,22 @@ export class HurtState extends BaseCharacterState {
   public onEnter(args: unknown[]): void {
     const attackDirection = args[0] as Direction;
 
+    // reset game object velocity
+    this._resetObjectVelocity();
+
+    const heldComponent = HeldGameObjectComponent.getComponent<HeldGameObjectComponent>(this._gameObject);
+    if (heldComponent !== undefined && heldComponent.object !== undefined) {
+      const throwObjectComponent = ThrowableObjectComponent.getComponent<ThrowableObjectComponent>(
+        heldComponent.object,
+      );
+      if (throwObjectComponent !== undefined) {
+        throwObjectComponent.drop();
+      }
+      heldComponent.drop();
+    }
+
     if (isArcadePhysicsBody(this._gameObject.body)) {
       const body = this._gameObject.body;
-      body.velocity.x = 0;
-      body.velocity.y = 0;
 
       switch (attackDirection) {
         case DIRECTION.DOWN:
@@ -51,8 +65,7 @@ export class HurtState extends BaseCharacterState {
 
       // wait a certain amount of time before resetting velocity to stop the push back
       this._gameObject.scene.time.delayedCall(HURT_PUSH_BACK_DELAY, () => {
-        body.velocity.x = 0;
-        body.velocity.y = 0;
+        this._resetObjectVelocity();
       });
     }
 

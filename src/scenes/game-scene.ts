@@ -12,12 +12,14 @@ import { Pot } from '../game-objects/objects/pot';
 import { Chest } from '../game-objects/objects/chest';
 import { GameObject } from '../common/types';
 import { CUSTOM_EVENTS, EVENT_BUS } from '../common/event-bus';
+import { isArcadePhysicsBody } from '../common/utils';
 
 export class GameScene extends Phaser.Scene {
   #controls!: KeyboardComponent;
   #player!: Player;
   #enemyGroup!: Phaser.GameObjects.Group;
   #blockingGroup!: Phaser.GameObjects.Group;
+  #potGameObjects!: Pot[];
 
   constructor() {
     super({
@@ -49,11 +51,15 @@ export class GameScene extends Phaser.Scene {
       { runChildUpdate: true },
     );
 
+    this.#potGameObjects = [];
+    const pot = new Pot({
+      scene: this,
+      position: { x: this.scale.width / 2 + 90, y: this.scale.height / 2 },
+    });
+    this.#potGameObjects.push(pot);
+
     this.#blockingGroup = this.add.group([
-      new Pot({
-        scene: this,
-        position: { x: this.scale.width / 2 + 90, y: this.scale.height / 2 },
-      }),
+      pot,
       new Chest({
         scene: this,
         position: { x: this.scale.width / 2 - 90, y: this.scale.height / 2 },
@@ -99,9 +105,42 @@ export class GameScene extends Phaser.Scene {
     });
 
     // register collisions between enemies and blocking game objects (doors, pots, chests, etc.)
-    this.physics.add.collider(this.#enemyGroup, this.#blockingGroup, (enemy, gameObject) => {
-      //
-    });
+    this.physics.add.collider(
+      this.#enemyGroup,
+      this.#blockingGroup,
+      (enemy, gameObject) => {
+        // handle when pot objects are thrown at enemies
+        if (
+          gameObject instanceof Pot &&
+          isArcadePhysicsBody(gameObject.body) &&
+          (gameObject.body.velocity.x !== 0 || gameObject.body.velocity.y !== 0)
+        ) {
+          const enemyGameObject = enemy as CharacterGameObject;
+          if (enemyGameObject instanceof CharacterGameObject) {
+            enemyGameObject.hit(this.#player.direction, 1);
+            gameObject.break();
+          }
+        }
+      },
+      // handle when objects are thrown on wisps, ignore collisions and let object move through
+      (enemy, gameObject) => {
+        const body = (gameObject as unknown as GameObject).body;
+        if (enemy instanceof Wisp && isArcadePhysicsBody(body) && (body.velocity.x !== 0 || body.velocity.y !== 0)) {
+          return false;
+        }
+        return true;
+      },
+    );
+
+    // handle collisions between thrown pots and other objects in the current room
+    if (this.#potGameObjects.length > 0) {
+      this.physics.add.collider(this.#potGameObjects, this.#blockingGroup, (pot) => {
+        if (!(pot instanceof Pot)) {
+          return;
+        }
+        pot.break();
+      });
+    }
   }
 
   #registerCustomEvents(): void {

@@ -74,7 +74,7 @@ export class Spider extends CharacterGameObject {
     this._stateMachine.addState(new MoveState(this));
     this._stateMachine.addState(new HurtState(this, ENEMY_SPIDER_HURT_PUSH_BACK_SPEED));
     this._stateMachine.addState(new DeathState(this));
-    this._stateMachine.setState(CHARACTER_STATES.IDLE_STATE);
+    //this._stateMachine.setState(CHARACTER_STATES.IDLE_STATE);
 
     // start simple ai movement pattern
     this.scene.time.addEvent({

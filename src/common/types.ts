@@ -21,7 +21,3 @@ export interface CustomGameObject {
   enableObject(): void;
   disableObject(): void;
 }
-
-export function isCustomGameObject(gameObject: GameObject): gameObject is GameObject & CustomGameObject {
-  return gameObject['disableObject'] !== undefined && gameObject['enableObject'] !== undefined;
-}
