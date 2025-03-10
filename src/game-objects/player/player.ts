@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { Position } from '../../common/types';
+import { GameObject, Position } from '../../common/types';
 import { InputComponent } from '../../components/input/input-component';
 import { IdleState } from '../../components/state-machine/states/character/idle-state';
 import { CHARACTER_STATES } from '../../components/state-machine/states/character/character-states';
@@ -11,6 +11,7 @@ import { CharacterGameObject } from '../common/character-game-object';
 import { HurtState } from '../../components/state-machine/states/character/hurt-state';
 import { flash } from '../../common/juice-utils';
 import { DeathState } from '../../components/state-machine/states/character/death-state';
+import { CollidingObjectsComponent } from '../../components/game-object/colliding-objects-component';
 
 export type PlayerConfig = {
   scene: Phaser.Scene;
@@ -21,6 +22,8 @@ export type PlayerConfig = {
 };
 
 export class Player extends CharacterGameObject {
+  #collidingObjectsComponent: CollidingObjectsComponent;
+
   constructor(config: PlayerConfig) {
     // create animation config for component
     const animationConfig: AnimationConfig = {
@@ -69,6 +72,9 @@ export class Player extends CharacterGameObject {
     this._stateMachine.addState(new DeathState(this));
     this._stateMachine.setState(CHARACTER_STATES.IDLE_STATE);
 
+    // add components
+    this.#collidingObjectsComponent = new CollidingObjectsComponent(this);
+
     // enable auto update functionality
     config.scene.events.on(Phaser.Scenes.Events.UPDATE, this.update, this);
     config.scene.events.once(
@@ -85,5 +91,14 @@ export class Player extends CharacterGameObject {
 
   get physicsBody(): Phaser.Physics.Arcade.Body {
     return this.body as Phaser.Physics.Arcade.Body;
+  }
+
+  public collidedWithGameObject(gameObject: GameObject): void {
+    this.#collidingObjectsComponent.add(gameObject);
+  }
+
+  public update(): void {
+    super.update();
+    this.#collidingObjectsComponent.reset();
   }
 }

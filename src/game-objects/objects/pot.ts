@@ -1,6 +1,8 @@
 import * as Phaser from 'phaser';
 import { ASSET_KEYS } from '../../common/assets';
 import { Position } from '../../common/types';
+import { InteractiveObjectComponent } from '../../components/game-object/interactive-object-component';
+import { INTERACTIVE_OBJECT_TYPE } from '../../common/common';
 
 type PotConfig = {
   scene: Phaser.Scene;
@@ -19,6 +21,10 @@ export class Pot extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
     this.setOrigin(0, 1).setImmovable(true);
 
+    // keep track of original position for the pot
     this.#position = { x: position.x, y: position.y };
+
+    // add components
+    new InteractiveObjectComponent(this, INTERACTIVE_OBJECT_TYPE.PICKUP);
   }
 }
