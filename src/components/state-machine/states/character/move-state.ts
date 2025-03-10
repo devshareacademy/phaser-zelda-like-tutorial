@@ -47,6 +47,12 @@ export class MoveState extends BaseMoveState {
       return false;
     }
 
+    // check if game object can be interacted with
+    if (!interactiveObjectComponent.canInteractWith()) {
+      return false;
+    }
+    interactiveObjectComponent.interact();
+
     // we can carry this item
     if (interactiveObjectComponent.objectType === INTERACTIVE_OBJECT_TYPE.PICKUP) {
       this._stateMachine.setState(CHARACTER_STATES.LIFT_STATE);
@@ -55,7 +61,7 @@ export class MoveState extends BaseMoveState {
 
     // we can open this item
     if (interactiveObjectComponent.objectType === INTERACTIVE_OBJECT_TYPE.OPEN) {
-      this._stateMachine.setState(CHARACTER_STATES.OPEN_CHEST_STATE);
+      this._stateMachine.setState(CHARACTER_STATES.OPEN_CHEST_STATE, collisionObject);
       return true;
     }
 
