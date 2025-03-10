@@ -55,7 +55,7 @@ export class MoveState extends BaseMoveState {
 
     // we can carry this item
     if (interactiveObjectComponent.objectType === INTERACTIVE_OBJECT_TYPE.PICKUP) {
-      this._stateMachine.setState(CHARACTER_STATES.LIFT_STATE);
+      this._stateMachine.setState(CHARACTER_STATES.LIFT_STATE, collisionObject);
       return true;
     }
 

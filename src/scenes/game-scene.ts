@@ -35,14 +35,6 @@ export class GameScene extends Phaser.Scene {
       .text(this.scale.width / 2, this.scale.height / 2, 'Game Scene', { fontFamily: ASSET_KEYS.FONT_PRESS_START_2P })
       .setOrigin(0.5);
 
-    this.#player = new Player({
-      scene: this,
-      position: { x: this.scale.width / 2, y: this.scale.height / 2 },
-      controls: this.#controls,
-      maxLife: PLAYER_START_MAX_HEALTH,
-      currentLife: PLAYER_START_MAX_HEALTH,
-    });
-
     this.#enemyGroup = this.add.group(
       [
         new Spider({
@@ -73,6 +65,14 @@ export class GameScene extends Phaser.Scene {
         requiresBossKey: true,
       }),
     ]);
+
+    this.#player = new Player({
+      scene: this,
+      position: { x: this.scale.width / 2, y: this.scale.height / 2 },
+      controls: this.#controls,
+      maxLife: PLAYER_START_MAX_HEALTH,
+      currentLife: PLAYER_START_MAX_HEALTH,
+    });
 
     this.#registerColliders();
     this.#registerCustomEvents();

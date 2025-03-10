@@ -24,7 +24,7 @@ export class IdleHoldingState extends BaseCharacterState {
 
     // if action key was pressed, throw item
     if (controls.isActionKeyJustDown) {
-      this._stateMachine.setState(CHARACTER_STATES.IDLE_STATE);
+      this._stateMachine.setState(CHARACTER_STATES.THROW_STATE);
       return;
     }
 
