@@ -70,7 +70,7 @@ export class HurtState extends BaseCharacterState {
   #transition(): void {
     // wait set amount of time before making character vulnerable again
     this._gameObject.scene.time.delayedCall(
-      this._gameObject.invulnerableComponent.inVulnerableAfterHitAnimationDuration,
+      this._gameObject.invulnerableComponent.invulnerableAfterHitAnimationDuration,
       () => {
         this._gameObject.invulnerableComponent.invulnerable = false;
       },

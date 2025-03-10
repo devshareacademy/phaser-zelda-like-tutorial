@@ -12,6 +12,10 @@ import { HurtState } from '../../components/state-machine/states/character/hurt-
 import { flash } from '../../common/juice-utils';
 import { DeathState } from '../../components/state-machine/states/character/death-state';
 import { CollidingObjectsComponent } from '../../components/game-object/colliding-objects-component';
+import { LiftState } from '../../components/state-machine/states/character/lift-state';
+import { OpenChestState } from '../../components/state-machine/states/character/open-chest-state';
+import { IdleHoldingState } from '../../components/state-machine/states/character/idle-holding-state';
+import { MoveHoldingState } from '../../components/state-machine/states/character/move-holding-state';
 
 export type PlayerConfig = {
   scene: Phaser.Scene;
@@ -43,6 +47,18 @@ export class Player extends CharacterGameObject {
       DIE_UP: { key: PLAYER_ANIMATION_KEYS.DIE_UP, repeat: 0, ignoreIfPlaying: true },
       DIE_LEFT: { key: PLAYER_ANIMATION_KEYS.DIE_SIDE, repeat: 0, ignoreIfPlaying: true },
       DIE_RIGHT: { key: PLAYER_ANIMATION_KEYS.DIE_SIDE, repeat: 0, ignoreIfPlaying: true },
+      IDLE_HOLD_DOWN: { key: PLAYER_ANIMATION_KEYS.IDLE_HOLD_DOWN, repeat: -1, ignoreIfPlaying: true },
+      IDLE_HOLD_UP: { key: PLAYER_ANIMATION_KEYS.IDLE_HOLD_UP, repeat: -1, ignoreIfPlaying: true },
+      IDLE_HOLD_LEFT: { key: PLAYER_ANIMATION_KEYS.IDLE_HOLD_SIDE, repeat: -1, ignoreIfPlaying: true },
+      IDLE_HOLD_RIGHT: { key: PLAYER_ANIMATION_KEYS.IDLE_HOLD_SIDE, repeat: -1, ignoreIfPlaying: true },
+      WALK_HOLD_DOWN: { key: PLAYER_ANIMATION_KEYS.WALK_HOLD_DOWN, repeat: -1, ignoreIfPlaying: true },
+      WALK_HOLD_UP: { key: PLAYER_ANIMATION_KEYS.WALK_HOLD_UP, repeat: -1, ignoreIfPlaying: true },
+      WALK_HOLD_LEFT: { key: PLAYER_ANIMATION_KEYS.WALK_HOLD_SIDE, repeat: -1, ignoreIfPlaying: true },
+      WALK_HOLD_RIGHT: { key: PLAYER_ANIMATION_KEYS.WALK_HOLD_SIDE, repeat: -1, ignoreIfPlaying: true },
+      LIFT_DOWN: { key: PLAYER_ANIMATION_KEYS.LIFT_DOWN, repeat: 0, ignoreIfPlaying: true },
+      LIFT_UP: { key: PLAYER_ANIMATION_KEYS.LIFT_UP, repeat: 0, ignoreIfPlaying: true },
+      LIFT_LEFT: { key: PLAYER_ANIMATION_KEYS.LIFT_SIDE, repeat: 0, ignoreIfPlaying: true },
+      LIFT_RIGHT: { key: PLAYER_ANIMATION_KEYS.LIFT_SIDE, repeat: 0, ignoreIfPlaying: true },
     };
 
     super({
@@ -70,6 +86,10 @@ export class Player extends CharacterGameObject {
       }),
     );
     this._stateMachine.addState(new DeathState(this));
+    this._stateMachine.addState(new LiftState(this));
+    this._stateMachine.addState(new OpenChestState(this));
+    this._stateMachine.addState(new IdleHoldingState(this));
+    this._stateMachine.addState(new MoveHoldingState(this));
     this._stateMachine.setState(CHARACTER_STATES.IDLE_STATE);
 
     // add components
