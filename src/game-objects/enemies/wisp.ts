@@ -46,7 +46,7 @@ export class Wisp extends CharacterGameObject {
 
     // add state machine
     this._stateMachine.addState(new BounceMoveState(this));
-    //this._stateMachine.setState(CHARACTER_STATES.BOUNCE_MOVE_STATE);
+    this._stateMachine.setState(CHARACTER_STATES.BOUNCE_MOVE_STATE);
 
     // custom animation for movement
     this.scene.tweens.add({
