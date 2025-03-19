@@ -7,14 +7,14 @@ import { Spider } from '../game-objects/enemies/spider';
 import { Wisp } from '../game-objects/enemies/wisp';
 import { CharacterGameObject } from '../game-objects/common/character-game-object';
 import { DIRECTION } from '../common/common';
-import { PLAYER_START_MAX_HEALTH } from '../common/config';
+import { DEBUG_COLLISION_ALPHA, PLAYER_START_MAX_HEALTH } from '../common/config';
 import { Pot } from '../game-objects/objects/pot';
 import { Chest } from '../game-objects/objects/chest';
 import { GameObject, LevelData } from '../common/types';
 import { CUSTOM_EVENTS, EVENT_BUS } from '../common/event-bus';
 import { isArcadePhysicsBody } from '../common/utils';
 import { TiledRoomObject } from '../common/tiled/types';
-import { TILED_LAYER_NAMES } from '../common/tiled/common';
+import { TILED_LAYER_NAMES, TILED_TILESET_NAMES } from '../common/tiled/common';
 import {
   getAllLayerNamesWithPrefix,
   getTiledChestObjectsFromMap,
@@ -44,6 +44,8 @@ export class GameScene extends Phaser.Scene {
       room: TiledRoomObject;
     };
   };
+  #collisionLayer!: Phaser.Tilemaps.TilemapLayer;
+  #enemyCollisionLayer!: Phaser.Tilemaps.TilemapLayer;
 
   constructor() {
     super({
@@ -63,6 +65,11 @@ export class GameScene extends Phaser.Scene {
     this.#controls = new KeyboardComponent(this.input.keyboard);
 
     this.#createLevel();
+    if (this.#collisionLayer === undefined || this.#enemyCollisionLayer === undefined) {
+      console.warn('Missing required collision layers for game.');
+      return;
+    }
+
     this.#setupPlayer();
     this.#setupCamera();
 
@@ -129,6 +136,14 @@ export class GameScene extends Phaser.Scene {
         pot.break();
       });
     }
+
+    // collision between player and map walls
+    this.#collisionLayer.setCollision([this.#collisionLayer.tileset[0].firstgid]);
+    this.physics.add.collider(this.#player, this.#collisionLayer);
+
+    // collide with walls, doors, etc
+    this.#enemyCollisionLayer.setCollision([this.#collisionLayer.tileset[0].firstgid]);
+    this.physics.add.collider(this.#enemyGroup, this.#enemyCollisionLayer);
   }
 
   #registerCustomEvents(): void {
@@ -155,6 +170,30 @@ export class GameScene extends Phaser.Scene {
     const map = this.make.tilemap({
       key: ASSET_KEYS[`${this.#levelData.level}_LEVEL`],
     });
+
+    // The first parameter is the name of the tileset in Tiled and the second parameter is the key
+    // of the tileset image used when loading the file in preload.
+    const collisionTiles = map.addTilesetImage(TILED_TILESET_NAMES.COLLISION, ASSET_KEYS.COLLISION);
+    if (collisionTiles === null) {
+      console.log(`encountered error while creating collision tiles from tiled`);
+      return;
+    }
+
+    const collisionLayer = map.createLayer(TILED_LAYER_NAMES.COLLISION, collisionTiles, 0, 0);
+    if (collisionLayer === null) {
+      console.log(`encountered error while creating collision layer using data from tiled`);
+      return;
+    }
+    this.#collisionLayer = collisionLayer;
+    this.#collisionLayer.setDepth(2).setAlpha(DEBUG_COLLISION_ALPHA);
+
+    const enemyCollisionLayer = map.createLayer(TILED_LAYER_NAMES.ENEMY_COLLISION, collisionTiles, 0, 0);
+    if (enemyCollisionLayer === null) {
+      console.log(`encountered error while creating enemy collision layer using data from tiled`);
+      return;
+    }
+    this.#enemyCollisionLayer = enemyCollisionLayer;
+    this.#enemyCollisionLayer.setDepth(2).setVisible(false);
 
     // initialize objects
     this.#objectsByRoomId = {};
