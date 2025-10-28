@@ -6,7 +6,9 @@
 		"start": "vite --config config/vite.config.js",
 		"build": "tsc && vite build --config config/vite.config.js",
 		"serve": "vite preview --config config/vite.config.js",
-		"lint": "eslint ./src -c ./config/eslint.config.mjs"
+		"lint": "eslint ./src -c ./config/eslint.config.mjs",
+		"bump": "ncu -u -t minor",
+		"bump-any": "ncu -u"
 	},
 	"author": "scottwestover",
 	"license": "MIT",
@@ -16,20 +18,21 @@
 	},
 	"homepage": "https://github.com/devshareacademy/phaser-zelda-like-tutorial",
 	"devDependencies": {
-		"@devshareacademy/eslint-config": "0.0.19",
+		"@devshareacademy/eslint-config": "0.1.1",
 		"@devshareacademy/prettier-config": "0.0.6",
 		"@devshareacademy/tsconfig": "0.0.3",
-		"@typescript-eslint/eslint-plugin": "8.20.0",
-		"@typescript-eslint/parser": "8.20.0",
-		"eslint": "9.18.0",
-		"eslint-config-prettier": "10.0.1",
-		"eslint-plugin-prettier": "5.2.3",
-		"prettier": "3.4.2",
-		"typescript": "5.7.3",
-		"vite": "6.0.7"
+		"@typescript-eslint/eslint-plugin": "8.46.2",
+		"@typescript-eslint/parser": "8.46.2",
+		"eslint": "9.38.0",
+		"eslint-config-prettier": "10.1.8",
+		"eslint-plugin-prettier": "5.5.4",
+		"prettier": "3.6.2",
+		"typescript": "5.9.3",
+		"vite": "7.1.12",
+		"npm-check-updates": "^19.1.2"
 	},
 	"dependencies": {
-		"phaser": "3.87.0"
+		"phaser": "3.90.0"
 	},
 	"resolutions": {},
 	"prettier": "@devshareacademy/prettier-config",
