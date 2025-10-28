@@ -2,3 +2,7 @@ node_modules
 .DS_Store
 dist
 project-task-tracker.todo
+
+.idea
+.idea/
+.idea/*

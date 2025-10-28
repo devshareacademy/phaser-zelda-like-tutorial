@@ -38,6 +38,7 @@ export type PlayerConfig = {
 export class Player extends CharacterGameObject {
   #collidingObjectsComponent: CollidingObjectsComponent;
   #weaponComponent: WeaponComponent;
+  #actionZone: Phaser.GameObjects.Zone;
 
   constructor(config: PlayerConfig) {
     // create animation config for component
@@ -121,6 +122,14 @@ export class Player extends CharacterGameObject {
       PLAYER_ATTACK_DAMAGE,
     );
 
+  // Add invisible action zone in front of player (smaller for precision)
+  this.#actionZone = this.scene.add.zone(this.x, this.y, 4, 4);
+    this.scene.physics.add.existing(this.#actionZone);
+    (this.#actionZone.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
+    (this.#actionZone.body as Phaser.Physics.Arcade.Body).setImmovable(true);
+    this.#actionZone.setOrigin(0.5, 0.5);
+    this.#actionZone.setVisible(false);
+
     // enable auto update functionality
     config.scene.events.on(Phaser.Scenes.Events.UPDATE, this.update, this);
     config.scene.events.once(
@@ -151,5 +160,47 @@ export class Player extends CharacterGameObject {
     super.update();
     this.#collidingObjectsComponent.reset();
     this.#weaponComponent.update();
+
+      let offsetX = 0;
+      let offsetY = 0;
+      let zoneWidth = 4;
+      let zoneHeight = 4;
+      switch (this.direction) {
+        case 'UP':
+          offsetY = -3;
+          offsetX = 1;
+          zoneWidth = 12;
+          zoneHeight = 4;
+          break;
+        case 'DOWN':
+          offsetY = 18;
+          offsetX = 1;
+          zoneWidth = 12;
+          zoneHeight = 4;
+          break;
+        case 'LEFT':
+          offsetX = -8;
+          offsetY = 8;
+          zoneWidth = 4;
+          zoneHeight = 12;
+          break;
+        case 'RIGHT':
+          offsetX = 10;
+          offsetY = 8;
+          zoneWidth = 4;
+          zoneHeight = 12;
+          break;
+      }
+
+      this.#actionZone.setPosition(this.x + offsetX, this.y + offsetY);
+      this.#actionZone.setSize(zoneWidth, zoneHeight);
+      const body = this.#actionZone.body as Phaser.Physics.Arcade.Body;
+      if (body) {
+        body.setSize(zoneWidth, zoneHeight);
+      }
+  }
+
+  get actionZone(): Phaser.GameObjects.Zone {
+    return this.#actionZone;
   }
 }

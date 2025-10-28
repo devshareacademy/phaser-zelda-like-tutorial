@@ -3,6 +3,8 @@ import { CHARACTER_STATES } from './character-states';
 import { CharacterGameObject } from '../../../../game-objects/common/character-game-object';
 import { HeldGameObjectComponent } from '../../../game-object/held-game-object-component';
 import { ThrowableObjectComponent } from '../../../game-object/throwable-object-component';
+import { InteractiveObjectComponent } from '../../../game-object/interactive-object-component';
+import { INTERACTIVE_OBJECT_TYPE } from '../../../../common/common';
 
 export class IdleState extends BaseCharacterState {
   constructor(gameObject: CharacterGameObject) {
@@ -39,6 +41,33 @@ export class IdleState extends BaseCharacterState {
     if (controls.isAttackKeyJustDown) {
       this._stateMachine.setState(CHARACTER_STATES.ATTACK_STATE);
       return;
+    }
+
+    // Use actionZone to detect objects in front of the player
+    const player = this._gameObject as any;
+    if (player.actionZone && controls.isActionKeyJustDown) {
+      const overlapping: Phaser.GameObjects.GameObject[] = [];
+      this._gameObject.scene.physics.overlap(player.actionZone, this._gameObject.scene.children.list, (zone, obj) => {
+        if (
+          obj instanceof Phaser.GameObjects.Sprite ||
+          obj instanceof Phaser.GameObjects.Image
+        ) {
+          overlapping.push(obj);
+        }
+      });
+
+      for (const obj of overlapping) {
+        const interactiveObjectComponent = InteractiveObjectComponent.getComponent<InteractiveObjectComponent>(obj as any);
+        if (
+          interactiveObjectComponent &&
+          interactiveObjectComponent.objectType === INTERACTIVE_OBJECT_TYPE.PICKUP &&
+          interactiveObjectComponent.canInteractWith()
+        ) {
+          interactiveObjectComponent.interact();
+          this._stateMachine.setState(CHARACTER_STATES.LIFT_STATE, obj);
+          return;
+        }
+      }
     }
 
     // if no other input is provided, do nothing

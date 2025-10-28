@@ -14,7 +14,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
     width: 256,
     height: 224,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH,
+    mode: Phaser.Scale.FIT,
   },
   backgroundColor: '#000000',
   physics: {
@@ -27,6 +27,20 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 };
 
 const game = new Phaser.Game(gameConfig);
+
+function resizeGame() {
+  const baseWidth = 256;
+  const baseHeight = 224;
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
+  const scaleX = windowWidth / baseWidth;
+  const scaleY = windowHeight / baseHeight;
+  const zoom = Math.floor(Math.min(scaleX, scaleY));
+  game.scale.setZoom(zoom > 0 ? zoom : 1);
+}
+
+window.addEventListener('resize', resizeGame);
+resizeGame();
 
 game.scene.add(SCENE_KEYS.PRELOAD_SCENE, PreloadScene);
 game.scene.add(SCENE_KEYS.GAME_SCENE, GameScene);
